@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/relationship-bff/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/relationship-bff/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/relationship-bff",
+  "projects": {
+    "relationship-bff": {
+      "type": "application",
+      "root": "apps/relationship-bff",
+      "entryFile": "main",
+      "sourceRoot": "apps/relationship-bff/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/relationship-bff/tsconfig.app.json"
+      }
+    },
+    "solicitation-queue-ms": {
+      "type": "application",
+      "root": "apps/solicitation-queue-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/solicitation-queue-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/solicitation-queue-ms/tsconfig.app.json"
+      }
+    },
+    "support-teams-ms": {
+      "type": "application",
+      "root": "apps/support-teams-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/support-teams-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/support-teams-ms/tsconfig.app.json"
+      }
+    }
+  }
+}
