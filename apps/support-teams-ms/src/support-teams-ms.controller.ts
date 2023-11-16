@@ -55,4 +55,9 @@ export class SupportTeamsMsController {
   async getOthersTeam(): Promise<Array<Support>> {
     return this.supportTeamsMsService.getSupportTeamByType('others')
   }
+
+  @MessagePattern({ cmd: 'get-type' })
+  async getSolicitationType(solicitation: Solicitation): Promise<string> {
+    return this.supportTeamsMsService.getType(solicitation)
+  }
 }

@@ -10,8 +10,8 @@ export class SolicitationQueueController {
   constructor(private readonly solicitationService: SolicitationQueueService) { }
 
   @EventPattern('solicitation_closed')
-  async handleClosedSolicitation(job: Job<Solicitation>): Promise<void> {
+  async handleClosedSolicitation(solicitation: Job<Solicitation>): Promise<void> {
     this.logger.log('Moving queue!');
-    this.solicitationService.moveQueue();
+    this.solicitationService.moveQueue(solicitation.data);
   }
 }

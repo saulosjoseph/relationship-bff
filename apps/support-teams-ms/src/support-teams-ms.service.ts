@@ -105,6 +105,17 @@ export class SupportTeamsMsService {
     }
   }
 
+  getType(solicitation: Solicitation): string {
+    switch (solicitation.subject) {
+      case "Problemas com cartão":
+        return 'cards';
+      case "contratação de empréstimo":
+        return 'loans';
+      default:
+        return 'others';
+    }
+  }
+
   getSupportTeamByType(type: string): Array<Support> {
     switch (type) {
       case "cards":
