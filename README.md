@@ -24,7 +24,7 @@
 
 ## Data flow
 
-<img src="./public/diagram.svg" width="200">
+<img src="./public/data-flow.svg" width="200">
 
 ## Description
 
