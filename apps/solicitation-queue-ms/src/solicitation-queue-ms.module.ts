@@ -4,8 +4,9 @@ import { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
 import { BullModule } from '@nestjs/bull';
 import { SolicitationQueueService } from './solicitation-queue-ms.service';
-import { CardsSolicitationQueueProcessor } from './cards-solicitation-queue-ms.processor';
+import { CardsSolicitationQueueProcessor } from './solicitation-queue-ms.processor';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { SolicitationQueueController } from './solicitation-queue-ms.controller';
 
 @Module({
   imports: [
@@ -16,14 +17,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         port: 6379,
       }
     }),
-    // BullModule.forRoot({
-    //   redis: {
-    //     host: 'localhost',
-    //     port: 6379,
-    //   },
-    // }),
     BullModule.registerQueue({
-      name: 'cards',
+      name: 'solicitation-queue',
     }),
     ClientsModule.register([
       {
@@ -35,6 +30,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       },
     ])
   ],
+  controllers: [SolicitationQueueController],
   providers: [CardsSolicitationQueueProcessor, SolicitationQueueService],
 })
 export class SolicitationQueueMsModule { }

@@ -1,27 +1,23 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
-    // BullModule.forRoot({
-    //   redis: {
-    //     host: 'localhost',
-    //     port: 6379,
-    //   },
-    // }),
     BullModule.registerQueue({
-      name: 'cards',
+      name: 'solicitation-queue',
     }),
-    // BullModule.registerQueue({
-    //   name: 'loans-team',
-    // }),
-    // BullModule.registerQueue({
-    //   name: 'others-team',
-    // })
+    ClientsModule.register([
+      {
+        name: 'SUPPORT_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3002,
+        },
+      },
+    ])
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule { }
