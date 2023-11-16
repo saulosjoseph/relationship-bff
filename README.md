@@ -22,6 +22,10 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+## Data flow
+
+<img src="./public/diagram.svg" width="200">
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -33,31 +37,34 @@ $ yarn install
 ```
 
 ## Running the app
+use node ^18
 
 ```bash
+# start redis
+$ docker-compose up
+
 # development
-$ yarn run start
+$ npm run start
+$ npm run start solicitation-queue-ms
+$ npm run start support-teams-ms
 
 # watch mode
-$ yarn run start:dev
+$ npm run start:dev
+$ npm run start:dev solicitation-queue-ms
+$ npm run start:dev support-teams-ms
 
 # production mode
-$ yarn run start:prod
+$ npm run start:prod
+$ npm run start:prod solicitation-queue-ms
+$ npm run start:prod support-teams-ms
 ```
 
-## Test
+## Documentation
 
+Swagger doc on route /api of relationship-bff service
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+$ http://localhost:3000/api
 ```
-
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
