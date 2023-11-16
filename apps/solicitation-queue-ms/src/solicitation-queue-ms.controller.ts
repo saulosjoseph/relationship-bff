@@ -1,6 +1,4 @@
-import { Job } from 'bull';
 import { SolicitationQueueService } from './solicitation-queue-ms.service';
-import { Solicitation } from './solicitation-queue.interfaces';
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 

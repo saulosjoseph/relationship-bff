@@ -11,7 +11,7 @@ export class CardsSolicitationQueueProcessor {
 
   @Process()
   async handleNewSolicitation(job: Job<Solicitation>): Promise<void> {
-    this.logger.log('Solicitation on cards queue!');
+    this.logger.log('Solicitation on queue!');
     this.solicitationService.newSolicitation(job.data);
   }
 }

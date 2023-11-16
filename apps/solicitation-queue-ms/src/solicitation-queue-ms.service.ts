@@ -60,7 +60,7 @@ export class SolicitationQueueService {
     console.log(awaitProcessing)
     if (awaitProcessing.length > 0) {
       console.log("chegou aqui");
-      let count = 3;
+      let count = awaitProcessing.length >= 3 ? 3 : awaitProcessing.length;
       while (count > 0) {
         const movedWaitProcessing = awaitProcessing.shift()
         await this.solicitationQueue.add(movedWaitProcessing)
