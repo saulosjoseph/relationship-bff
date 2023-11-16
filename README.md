@@ -20,19 +20,19 @@ use node ^18
 $ docker-compose up
 
 # development
-$ npm run start
-$ npm run start solicitation-queue-ms
-$ npm run start support-teams-ms
+$ yarn run start
+$ yarn run start solicitation-queue-ms
+$ yarn run start support-teams-ms
 
 # watch mode
-$ npm run start:dev
-$ npm run start:dev solicitation-queue-ms
-$ npm run start:dev support-teams-ms
+$ yarn run start:dev
+$ yarn run start:dev solicitation-queue-ms
+$ yarn run start:dev support-teams-ms
 
 # production mode
-$ npm run start:prod
-$ npm run start:prod solicitation-queue-ms
-$ npm run start:prod support-teams-ms
+$ yarn run start:prod
+$ yarn run start:prod solicitation-queue-ms
+$ yarn run start:prod support-teams-ms
 ```
 
 ## Documentation
