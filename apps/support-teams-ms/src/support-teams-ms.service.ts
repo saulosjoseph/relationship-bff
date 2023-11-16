@@ -1,55 +1,16 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Support } from './support-teams.interface';
-import { Solicitation } from 'apps/solicitation-queue-ms/src/solicitation-queue.interfaces';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { v4 as uuidv4 } from 'uuid';
+import { NewSupport, Support } from './support-teams.interface';
+import { Solicitation } from 'apps/solicitation-queue-ms/src/solicitation-queue.interfaces';
 
 @Injectable()
 export class SupportTeamsMsService {
 
-  private supportCardTeam: Array<Support> = [{
-    id: uuidv4(),
-    name: 'AtendenteCards00',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteCards01',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteCards02',
-    processingSolicitations: []
-  }];
-
-  private loanstCardTeam: Array<Support> = [{
-    id: uuidv4(),
-    name: 'AtendenteLoans00',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteLoans01',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteLoans02',
-    processingSolicitations: []
-  }];
-
-  private otherstCardTeam: Array<Support> = [{
-    id: uuidv4(),
-    name: 'AtendenteOthers00',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteOthers01',
-    processingSolicitations: []
-  }, {
-    id: uuidv4(),
-    name: 'AtendenteOthers02',
-    processingSolicitations: []
-  }];
-
-
-  constructor() { }
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) { }
 
   getAttendantWithFewerSolicitations(supportTeam: Array<Support>): string {
     const attendantWithfewerSolicitations = {
@@ -63,15 +24,31 @@ export class SupportTeamsMsService {
       }
     });
     console.log(JSON.stringify(attendantWithfewerSolicitations))
-    if (attendantWithfewerSolicitations.solicitations >= 1) {
+    if (attendantWithfewerSolicitations.solicitations >= 3) {
       return '';
     }
     return attendantWithfewerSolicitations.id;
   }
 
-  setSolicitationToAttendant(attendantId: string, solicitation: Solicitation, supportTeam: Array<Support>): void {
+  async updateTeam(type: string, supportTeam: Array<Support>): Promise<void> {
+    switch (type) {
+      case "cards":
+        await this.cacheManager.set('cards_support_team', supportTeam, 0);
+        break;
+      case "loans":
+        await this.cacheManager.set('loans_support_team', supportTeam, 0);
+        break;
+      default:
+        await this.cacheManager.set('others_support_team', supportTeam, 0);
+        break;
+    }
+  }
+
+  async setSolicitationToAttendant(attendantId: string, solicitation: Solicitation, supportTeam: Array<Support>): Promise<void> {
     const indexAttendant = supportTeam.findIndex(attendant => attendant.id === attendantId);
     supportTeam[indexAttendant].processingSolicitations.push(solicitation);
+    const type = this.getType(solicitation);
+    this.updateTeam(type, supportTeam)
   }
 
   removeSolicitationFromAttendant(supportId: string, solicitationId: string, supportTeam: Array<Support>): Solicitation {
@@ -87,6 +64,8 @@ export class SupportTeamsMsService {
     }
     const solicitation = JSON.parse(JSON.stringify(supportTeam[indexAttendant].processingSolicitations[indexSolicitation])) as Solicitation;
     supportTeam[indexAttendant].processingSolicitations.splice(indexSolicitation, 1);
+    const type = this.getType(solicitation);
+    this.updateTeam(type, supportTeam)
     return solicitation;
   }
 
@@ -94,14 +73,14 @@ export class SupportTeamsMsService {
     return supportTeam.filter(attendant => attendant.id === supportId)[0];
   }
 
-  getSupportTeam(solicitation: Solicitation): Array<Support> {
+  async getSupportTeam(solicitation: Solicitation): Promise<Array<Support>> {
     switch (solicitation.subject) {
       case "Problemas com cartão":
-        return this.supportCardTeam;
+        return this.cacheManager.get<Array<Support> | undefined>('cards_support_team') || [];
       case "contratação de empréstimo":
-        return this.loanstCardTeam;
+        return this.cacheManager.get<Array<Support> | undefined>('loans_support_team') || [];
       default:
-        return this.otherstCardTeam;
+        return this.cacheManager.get<Array<Support> | undefined>('others_support_team') || [];
     }
   }
 
@@ -116,14 +95,40 @@ export class SupportTeamsMsService {
     }
   }
 
-  getSupportTeamByType(type: string): Array<Support> {
+  async getSupportTeamByType(type: string): Promise<Array<Support>> {
     switch (type) {
       case "cards":
-        return this.supportCardTeam;
+        return await this.cacheManager.get<Array<Support> | undefined>('cards_support_team') || [];
       case "loans":
-        return this.loanstCardTeam;
+        return await this.cacheManager.get<Array<Support> | undefined>('loans_support_team') || [];
       default:
-        return this.otherstCardTeam;
+        return await this.cacheManager.get<Array<Support> | undefined>('others_support_team') || [];
     }
+  }
+
+  async newSupport(newSupport: NewSupport): Promise<Support> {
+    const newSuport: Support = {
+      id: uuidv4(),
+      name: newSupport.name,
+      processingSolicitations: []
+    };
+    switch (newSupport.type) {
+      case "cards":
+        let teamCards = await this.cacheManager.get<Array<Support> | undefined>('cards_support_team') || [];
+        teamCards.push(newSuport);
+        await this.cacheManager.set('cards_support_team', teamCards, 0);
+        break;
+      case "loans":
+        let teamLoans = await this.cacheManager.get<Array<Support> | undefined>('loans_support_team') || [];
+        teamLoans.push(newSuport);
+        await this.cacheManager.set('loans_support_team', teamLoans, 0);
+        break;
+      default:
+        let teamOthers = await this.cacheManager.get<Array<Support> | undefined>('others_support_team') || [];
+        teamOthers.push(newSuport)
+        await this.cacheManager.set('others_support_team', teamOthers, 0);
+        break;
+    }
+    return newSuport;
   }
 }

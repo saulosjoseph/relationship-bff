@@ -10,3 +10,12 @@ export class NewSolicitation {
   body: string;
 }
 
+export class NewSupport {
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}

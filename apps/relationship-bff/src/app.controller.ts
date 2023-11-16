@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Inject, Logger, Param, Post } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { NewSolicitation } from './app.validator';
+import { NewSolicitation, NewSupport } from './app.validator';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ClientProxy } from '@nestjs/microservices';
@@ -50,5 +50,10 @@ export class AppController {
   @Get("others")
   async getOthersSolicitations(): Promise<Array<Support>> {
     return firstValueFrom(this.supportService.send({ cmd: 'get-others' }, {}));
+  }
+
+  @Post("/support")
+  async createNewSupport(@Body() newSupport: NewSupport): Promise<Support> {
+    return firstValueFrom(this.supportService.send({ cmd: 'create-support' }, newSupport));
   }
 }

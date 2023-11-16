@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs';
 import { NewSolicitation } from 'apps/relationship-bff/src/app.validator';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 
 @Injectable()
 export class SolicitationQueueService {
@@ -20,10 +19,7 @@ export class SolicitationQueueService {
 
   async newSolicitation(solicitation: Solicitation): Promise<void> {
     const type = await firstValueFrom<string>(this.supportService.send({ cmd: 'get-type' }, solicitation));
-    let awaitProcessingList = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`);
-    if (awaitProcessingList === undefined) {
-      awaitProcessingList = [];
-    }
+    let awaitProcessingList = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
     try {
       this.logger.log('Sending to team!');
       const attendant = await firstValueFrom<boolean>(this.supportService.send({ cmd: 'attach-solicitation-to-support' }, solicitation));
@@ -49,14 +45,29 @@ export class SolicitationQueueService {
     );
   }
 
-  async moveQueue(solicitation: Solicitation): Promise<void> {
-    const type = await firstValueFrom<string>(this.supportService.send({ cmd: 'get-type' }, solicitation));
-    const awaitProcessing = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`);
+  async moveQueue(type: string): Promise<void> {
+    const awaitProcessing = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
     if (awaitProcessing.length > 0) {
       const movedWaitProcessing = awaitProcessing.shift()
       this.solicitationQueue.add(movedWaitProcessing)
       await this.cacheManager.set(`${type}_await_processing`, awaitProcessing, 0);
       console.log(`Awaiting solicitation ${JSON.stringify(movedWaitProcessing)} sended to process!`)
+    }
+  }
+
+  async setAllToNewSupport(type: string): Promise<void> {
+    const awaitProcessing = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
+    console.log(awaitProcessing)
+    if (awaitProcessing.length > 0) {
+      console.log("chegou aqui");
+      let count = 3;
+      while (count > 0) {
+        const movedWaitProcessing = awaitProcessing.shift()
+        await this.solicitationQueue.add(movedWaitProcessing)
+        console.log(`Awaiting solicitation ${JSON.stringify(movedWaitProcessing)} sended to process!`)
+        count = count - 1;
+      }
+      await this.cacheManager.set(`${type}_await_processing`, awaitProcessing, 0);
     }
   }
 }

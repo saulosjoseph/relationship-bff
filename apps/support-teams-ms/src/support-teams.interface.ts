@@ -11,3 +11,8 @@ export interface CloseSolicitation {
     type: string;
     solicitation: string;
 }
+
+export interface NewSupport {
+    name: string;
+    type: string;
+}

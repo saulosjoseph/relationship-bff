@@ -2,7 +2,7 @@ import { Controller, Inject, Logger } from '@nestjs/common';
 import { SupportTeamsMsService } from './support-teams-ms.service';
 import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { Solicitation } from 'apps/solicitation-queue-ms/src/solicitation-queue.interfaces';
-import { CloseSolicitation, Support } from './support-teams.interface';
+import { CloseSolicitation, NewSupport, Support } from './support-teams.interface';
 
 @Controller()
 export class SupportTeamsMsController {
@@ -14,9 +14,9 @@ export class SupportTeamsMsController {
   ) { }
 
   @MessagePattern({ cmd: 'attach-solicitation-to-support' })
-  attachSolicitationToSupport(solicitation: Solicitation): boolean {
+  async attachSolicitationToSupport(solicitation: Solicitation): Promise<boolean> {
     this.logger.log(`${JSON.stringify(solicitation)} captured by card team!`)
-    const team = this.supportTeamsMsService.getSupportTeam(solicitation);
+    const team = await this.supportTeamsMsService.getSupportTeam(solicitation);
     const supportId = this.supportTeamsMsService.getAttendantWithFewerSolicitations(team);
     if (supportId === '') {
       this.logger.log("Support team is full of solicitations!")
@@ -30,10 +30,10 @@ export class SupportTeamsMsController {
 
   @MessagePattern({ cmd: 'close-solicitation' })
   async closeSolicitation(closeSolicitation: CloseSolicitation): Promise<boolean> {
-    const team = this.supportTeamsMsService.getSupportTeamByType(closeSolicitation.type)
+    const team = await this.supportTeamsMsService.getSupportTeamByType(closeSolicitation.type)
     try {
-      const ended = this.supportTeamsMsService.removeSolicitationFromAttendant(closeSolicitation.support, closeSolicitation.solicitation, team);
-      this.queueService.emit<string>('solicitation_closed', ended);
+      this.supportTeamsMsService.removeSolicitationFromAttendant(closeSolicitation.support, closeSolicitation.solicitation, team);
+      this.queueService.emit<string>('move_queue', closeSolicitation.type);
       return true;
     } catch (error) {
       console.log(error);
@@ -59,5 +59,12 @@ export class SupportTeamsMsController {
   @MessagePattern({ cmd: 'get-type' })
   async getSolicitationType(solicitation: Solicitation): Promise<string> {
     return this.supportTeamsMsService.getType(solicitation)
+  }
+
+  @MessagePattern({ cmd: 'create-support' })
+  async createSupport(newSupport: NewSupport): Promise<Support> {
+    const response = this.supportTeamsMsService.newSupport(newSupport)
+    this.queueService.emit<string>('new_support', newSupport.type);
+    return response;
   }
 }
