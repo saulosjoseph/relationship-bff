@@ -6,7 +6,7 @@ import { Queue } from 'bull';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { Support } from 'apps/support-teams-ms/src/support-teams.interface';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 
 @Controller()
@@ -18,6 +18,7 @@ export class AppController {
   ) { }
 
   @Post()
+  @ApiOperation({ summary: 'New solicitation' })
   @ApiBody({
     type: NewSolicitation,
   })
@@ -29,6 +30,7 @@ export class AppController {
   }
 
   @Post("cards/:supportId/close/:solicitationId")
+  @ApiOperation({ summary: 'Close cards solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
   async endCardsSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
@@ -36,6 +38,7 @@ export class AppController {
   }
 
   @Post("loans/:supportId/close/:solicitationId")
+  @ApiOperation({ summary: 'Close loans solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
   async endLoansSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
@@ -43,6 +46,7 @@ export class AppController {
   }
 
   @Post("others/:supportId/close/:solicitationId")
+  @ApiOperation({ summary: 'Close others solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
   async endOthersSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
@@ -50,24 +54,28 @@ export class AppController {
   }
 
   @Get("cards")
+  @ApiOperation({ summary: 'Get cards solicitation' })
   @ApiResponse({ status: 200, type: Array<SupportDTO> })
   async getCardsSolicitations(): Promise<Array<Support>> {
     return firstValueFrom(this.supportService.send({ cmd: 'get-cards' }, {}));
   }
 
   @Get("loans")
+  @ApiOperation({ summary: 'Get loans solicitation' })
   @ApiResponse({ status: 200, type: Array<SupportDTO> })
   async getLoansSolicitations(): Promise<Array<Support>> {
     return firstValueFrom(this.supportService.send({ cmd: 'get-loans' }, {}));
   }
 
   @Get("others")
+  @ApiOperation({ summary: 'Get others solicitation' })
   @ApiResponse({ status: 200, type: Array<SupportDTO> })
   async getOthersSolicitations(): Promise<Array<Support>> {
     return firstValueFrom(this.supportService.send({ cmd: 'get-others' }, {}));
   }
 
   @Post("/support")
+  @ApiOperation({ summary: 'Create new support employee' })
   @ApiBody({
     type: NewSupport,
   })
