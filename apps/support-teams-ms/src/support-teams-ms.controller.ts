@@ -16,7 +16,8 @@ export class SupportTeamsMsController {
   @MessagePattern({ cmd: 'attach-solicitation-to-support' })
   async attachSolicitationToSupport(solicitation: Solicitation): Promise<boolean> {
     this.logger.log(`${JSON.stringify(solicitation)} captured by card team!`)
-    const team = await this.supportTeamsMsService.getSupportTeam(solicitation);
+    const team = await this.supportTeamsMsService.getSupportTeam(solicitation) || [];
+    console.log(team);
     const supportId = this.supportTeamsMsService.getAttendantWithFewerSolicitations(team);
     if (supportId === '') {
       this.logger.log("Support team is full of solicitations!")

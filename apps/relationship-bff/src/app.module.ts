@@ -16,6 +16,15 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           port: 3002,
         },
       },
+    ]),
+    ClientsModule.register([
+      {
+        name: 'QUEUE_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3001,
+        },
+      },
     ])
   ],
   controllers: [AppController],

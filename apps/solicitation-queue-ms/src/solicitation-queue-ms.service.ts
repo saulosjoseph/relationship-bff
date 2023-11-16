@@ -70,4 +70,9 @@ export class SolicitationQueueService {
       await this.cacheManager.set(`${type}_await_processing`, awaitProcessing, 0);
     }
   }
+
+  async getAwaitingSolicitations(type: string): Promise<Array<Solicitation>> {
+    const awaitProcessing = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
+    return awaitProcessing;
+  }
 }

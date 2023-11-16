@@ -1,6 +1,7 @@
 import { SolicitationQueueService } from './solicitation-queue-ms.service';
 import { Controller, Logger } from '@nestjs/common';
-import { EventPattern } from '@nestjs/microservices';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import { Solicitation } from './solicitation-queue.interfaces';
 
 @Controller()
 export class SolicitationQueueController {
@@ -19,4 +20,10 @@ export class SolicitationQueueController {
     console.log(type)
     this.solicitationService.setAllToNewSupport(type);
   }
+
+  @MessagePattern({ cmd: 'get-awaiting-solicitations' })
+  async getAwaitingOthersSolicitations(type: string): Promise<Array<Solicitation>> {
+    return this.solicitationService.getAwaitingSolicitations(type)
+  }
 }
+
