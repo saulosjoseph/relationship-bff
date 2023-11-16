@@ -33,7 +33,7 @@ export class AppController {
   @ApiOperation({ summary: 'Close cards solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
-  async endCardsSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
+  async endCardsSolicitation(@Param('supportId') supportId: string, @Param('solicitationId') solicitationId: string): Promise<string> {
     return firstValueFrom(this.supportService.send({ cmd: 'close-solicitation' }, { support: supportId, solicitation: solicitationId, type: 'cards' }));
   }
 
@@ -41,7 +41,7 @@ export class AppController {
   @ApiOperation({ summary: 'Close loans solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
-  async endLoansSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
+  async endLoansSolicitation(@Param('supportId') supportId: string, @Param('solicitationId') solicitationId: string): Promise<string> {
     return firstValueFrom(this.supportService.send({ cmd: 'close-solicitation' }, { support: supportId, solicitation: solicitationId, type: 'loans' }));
   }
 
@@ -49,7 +49,7 @@ export class AppController {
   @ApiOperation({ summary: 'Close others solicitation' })
   @ApiResponse({ status: 200, type: String })
   @ApiResponse({ status: 400, type: String })
-  async endOthersSolicitation(@Param('supportId') supportId, @Param('solicitationId') solicitationId: string): Promise<string> {
+  async endOthersSolicitation(@Param('supportId') supportId: string, @Param('solicitationId') solicitationId: string): Promise<string> {
     return firstValueFrom(this.supportService.send({ cmd: 'close-solicitation' }, { support: supportId, solicitation: solicitationId, type: 'others' }));
   }
 
