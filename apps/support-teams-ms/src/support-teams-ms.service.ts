@@ -23,7 +23,6 @@ export class SupportTeamsMsService {
         attendantWithfewerSolicitations.solicitations = attendat.processingSolicitations.length;
       }
     });
-    console.log(JSON.stringify(attendantWithfewerSolicitations))
     if (attendantWithfewerSolicitations.solicitations >= 3) {
       return '';
     }

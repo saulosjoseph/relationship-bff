@@ -15,9 +15,8 @@ export class SupportTeamsMsController {
 
   @MessagePattern({ cmd: 'attach-solicitation-to-support' })
   async attachSolicitationToSupport(solicitation: Solicitation): Promise<boolean> {
-    this.logger.log(`${JSON.stringify(solicitation)} captured by card team!`)
+    this.logger.log(`${JSON.stringify(solicitation)} captured by team!`)
     const team = await this.supportTeamsMsService.getSupportTeam(solicitation) || [];
-    console.log(team);
     const supportId = this.supportTeamsMsService.getAttendantWithFewerSolicitations(team);
     if (supportId === '') {
       this.logger.log("Support team is full of solicitations!")
@@ -37,7 +36,6 @@ export class SupportTeamsMsController {
       this.queueService.emit<string>('move_queue', closeSolicitation.type);
       return true;
     } catch (error) {
-      console.log(error);
       return false;
     }
   }

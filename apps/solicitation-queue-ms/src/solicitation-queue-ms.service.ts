@@ -3,10 +3,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Solicitation } from './solicitation-queue.interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { NewSolicitation } from 'apps/relationship-bff/src/app.validator';
 import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { Job, Queue } from 'bull';
 
 @Injectable()
 export class SolicitationQueueService {
@@ -18,11 +18,24 @@ export class SolicitationQueueService {
   ) { }
 
   async newSolicitation(solicitation: Solicitation): Promise<void> {
-    const type = await firstValueFrom<string>(this.supportService.send({ cmd: 'get-type' }, solicitation));
+
+    const type = await firstValueFrom<string>(this.supportService.send({ cmd: 'get-type' }, solicitation).pipe(
+      catchError(async () => undefined)
+    ));
+    if (!type) {
+      this.retry(solicitation);
+      return;
+    }
     let awaitProcessingList = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
     try {
       this.logger.log('Sending to team!');
-      const attendant = await firstValueFrom<boolean>(this.supportService.send({ cmd: 'attach-solicitation-to-support' }, solicitation));
+      const attendant = await firstValueFrom<boolean>(this.supportService.send({ cmd: 'attach-solicitation-to-support' }, solicitation).pipe(
+        catchError(async () => undefined)
+      ));
+      if (attendant === undefined) {
+        this.retry(solicitation);
+        return;
+      }
       if (attendant) {
         this.logger.log(
           `Solicitation ${JSON.stringify(solicitation)} is being processed`
@@ -74,5 +87,11 @@ export class SolicitationQueueService {
   async getAwaitingSolicitations(type: string): Promise<Array<Solicitation>> {
     const awaitProcessing = await this.cacheManager.get<Array<Solicitation> | undefined>(`${type}_await_processing`) || [];
     return awaitProcessing;
+  }
+
+  async retry(solicitation: Solicitation): Promise<void> {
+    this.logger.log('Support service is down! Retrying in 50sec');
+    this.solicitationQueue.add(solicitation, { delay: 50000 });
+    return;
   }
 }
